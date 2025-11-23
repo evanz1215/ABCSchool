@@ -37,4 +37,11 @@ public class BaseDbContext : MultiTenantIdentityDbContext<
             });
         }
     }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        base.OnModelCreating(builder);
+
+        builder.ApplyConfigurationsFromAssembly(GetType().Assembly);
+    }
 }
