@@ -25,3 +25,15 @@ public record SchoolPermission(string action, string feature, string description
 
     public static string NameFor(string action, string feature) => $"Permission.{feature}.{action}";
 }
+
+public static class SchoolPermissions
+{
+    private static readonly SchoolPermission[] _all =
+        [
+            new SchoolPermission(SchoolAction.Create, SchoolFeature.Tenants, "Create Tenants",isRoot:true),
+            new SchoolPermission(SchoolAction.Read, SchoolFeature.Tenants, "Read Tenants",isRoot:true),
+            new SchoolPermission(SchoolAction.Update, SchoolFeature.Tenants, "Update Tenants",isRoot:true),
+            new SchoolPermission(SchoolAction.UpgradeSubscription, SchoolFeature.Tenants, "Upgrade Tenant's Subscription ",isRoot:true),
+            //new SchoolPermission(SchoolAction.Delete, SchoolFeature.Tenants, "Delete Tenants",isRoot:true),
+        ];
+}
