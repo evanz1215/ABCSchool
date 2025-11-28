@@ -32,35 +32,39 @@ public record SchoolPermission(string action, string feature, string description
 
 public static class SchoolPermissions
 {
+    private const string Tenancy = "Tenancy";
+    private const string SystemAccess = "SystemAccess";
+    private const string Academics = "Academics";
+
     private static readonly SchoolPermission[] _allPermissions =
     [
-        new SchoolPermission(SchoolAction.Create, SchoolFeature.Tenants, "Create Tenants", "Tenancy", isRoot: true),
-            new SchoolPermission(SchoolAction.Read, SchoolFeature.Tenants, "Read Tenants", "Tenancy", isRoot: true),
-            new SchoolPermission(SchoolAction.Update, SchoolFeature.Tenants, "Update Tenants", "Tenancy", isRoot: true),
-            new SchoolPermission(SchoolAction.UpgradeSubscription, SchoolFeature.Tenants, "Upgrade Tenant's Subscription", "Tenancy", isRoot: true),
+        new SchoolPermission(SchoolAction.Create, SchoolFeature.Tenants, "Create Tenants", Tenancy, isRoot: true),
+            new SchoolPermission(SchoolAction.Read, SchoolFeature.Tenants, "Read Tenants", Tenancy, isRoot: true),
+            new SchoolPermission(SchoolAction.Update, SchoolFeature.Tenants, "Update Tenants", Tenancy, isRoot: true),
+            new SchoolPermission(SchoolAction.UpgradeSubscription, SchoolFeature.Tenants, "Upgrade Tenant's Subscription", Tenancy, isRoot: true),
 
-            new SchoolPermission(SchoolAction.Create, SchoolFeature.Users, "Create Users", "SystemAccess"),
-            new SchoolPermission(SchoolAction.Update, SchoolFeature.Users, "Update Users", "SystemAccess"),
-            new SchoolPermission(SchoolAction.Delete, SchoolFeature.Users, "Delete Users", "SystemAccess"),
-            new SchoolPermission(SchoolAction.Read, SchoolFeature.Users, "Read Users", "SystemAccess"),
+            new SchoolPermission(SchoolAction.Create, SchoolFeature.Users, "Create Users", SystemAccess),
+            new SchoolPermission(SchoolAction.Update, SchoolFeature.Users, "Update Users", SystemAccess),
+            new SchoolPermission(SchoolAction.Delete, SchoolFeature.Users, "Delete Users", SystemAccess),
+            new SchoolPermission(SchoolAction.Read, SchoolFeature.Users, "Read Users", SystemAccess),
 
-            new SchoolPermission(SchoolAction.Read, SchoolFeature.UserRoles, "Read User Roles", "SystemAccess"),
-            new SchoolPermission(SchoolAction.Update, SchoolFeature.UserRoles, "Update User Roles", "SystemAccess"),
+            new SchoolPermission(SchoolAction.Read, SchoolFeature.UserRoles, "Read User Roles", SystemAccess),
+            new SchoolPermission(SchoolAction.Update, SchoolFeature.UserRoles, "Update User Roles", SystemAccess),
 
-            new SchoolPermission(SchoolAction.Read, SchoolFeature.Roles, "Read Roles", "SystemAccess"),
-            new SchoolPermission(SchoolAction.Create, SchoolFeature.Roles, "Create Roles", "SystemAccess"),
-            new SchoolPermission(SchoolAction.Update, SchoolFeature.Roles, "Update Roles", "SystemAccess"),
-            new SchoolPermission(SchoolAction.Delete, SchoolFeature.Roles, "Delete Roles", "SystemAccess"),
+            new SchoolPermission(SchoolAction.Read, SchoolFeature.Roles, "Read Roles", SystemAccess),
+            new SchoolPermission(SchoolAction.Create, SchoolFeature.Roles, "Create Roles", SystemAccess),
+            new SchoolPermission(SchoolAction.Update, SchoolFeature.Roles, "Update Roles", SystemAccess),
+            new SchoolPermission(SchoolAction.Delete, SchoolFeature.Roles, "Delete Roles", SystemAccess),
 
-            new SchoolPermission(SchoolAction.Read, SchoolFeature.RoleClaims, "Read Role Claims/Permissions", "SystemAccess"),
-            new SchoolPermission(SchoolAction.Update, SchoolFeature.RoleClaims, "Update Role Claims/Permissions", "SystemAccess"),
+            new SchoolPermission(SchoolAction.Read, SchoolFeature.RoleClaims, "Read Role Claims/Permissions", SystemAccess),
+            new SchoolPermission(SchoolAction.Update, SchoolFeature.RoleClaims, "Update Role Claims/Permissions", SystemAccess),
 
-            new SchoolPermission(SchoolAction.Read, SchoolFeature.Schools, "Read Schools", "Academics", isBasic: true),
-            new SchoolPermission(SchoolAction.Create, SchoolFeature.Schools, "Create Schools", "Academics"),
-            new SchoolPermission(SchoolAction.Update, SchoolFeature.Schools, "Update Schools", "Academics"),
-            new SchoolPermission(SchoolAction.Delete, SchoolFeature.Schools, "Delete Schools", "Academics"),
+            new SchoolPermission(SchoolAction.Read, SchoolFeature.Schools, "Read Schools", Academics, isBasic: true),
+            new SchoolPermission(SchoolAction.Create, SchoolFeature.Schools, "Create Schools", Academics),
+            new SchoolPermission(SchoolAction.Update, SchoolFeature.Schools, "Update Schools", Academics),
+            new SchoolPermission(SchoolAction.Delete, SchoolFeature.Schools, "Delete Schools", Academics),
 
-            new SchoolPermission(SchoolAction.RefreshToken, SchoolFeature.Tokens, "Generate Refresh Token", "SystemAccess", isBasic: true)
+            new SchoolPermission(SchoolAction.RefreshToken, SchoolFeature.Tokens, "Generate Refresh Token", SystemAccess, isBasic: true)
     ];
 
     public static IReadOnlyList<SchoolPermission> All { get; }
