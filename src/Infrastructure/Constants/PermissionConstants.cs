@@ -23,9 +23,9 @@ public static class SchoolFeature
     public const string Tokens = nameof(Tokens);
 }
 
-public record SchoolPermission(string action, string feature, string description, string group, bool isBasic = false, bool isRoot = false)
+public record SchoolPermission(string Actioin, string Feature, string Description, string Group, bool IsBasic = false, bool IsRoot = false)
 {
-    public string Name => NameFor(action, feature);
+    public string Name => NameFor(Actioin, Feature);
 
     public static string NameFor(string action, string feature) => $"Permission.{feature}.{action}";
 }
@@ -38,10 +38,10 @@ public static class SchoolPermissions
 
     private static readonly SchoolPermission[] _allPermissions =
     [
-        new SchoolPermission(SchoolAction.Create, SchoolFeature.Tenants, "Create Tenants", Tenancy, isRoot: true),
-            new SchoolPermission(SchoolAction.Read, SchoolFeature.Tenants, "Read Tenants", Tenancy, isRoot: true),
-            new SchoolPermission(SchoolAction.Update, SchoolFeature.Tenants, "Update Tenants", Tenancy, isRoot: true),
-            new SchoolPermission(SchoolAction.UpgradeSubscription, SchoolFeature.Tenants, "Upgrade Tenant's Subscription", Tenancy, isRoot: true),
+        new SchoolPermission(SchoolAction.Create, SchoolFeature.Tenants, "Create Tenants", Tenancy, IsRoot: true),
+            new SchoolPermission(SchoolAction.Read, SchoolFeature.Tenants, "Read Tenants", Tenancy, IsRoot: true),
+            new SchoolPermission(SchoolAction.Update, SchoolFeature.Tenants, "Update Tenants", Tenancy, IsRoot: true),
+            new SchoolPermission(SchoolAction.UpgradeSubscription, SchoolFeature.Tenants, "Upgrade Tenant's Subscription", Tenancy, IsRoot: true),
 
             new SchoolPermission(SchoolAction.Create, SchoolFeature.Users, "Create Users", SystemAccess),
             new SchoolPermission(SchoolAction.Update, SchoolFeature.Users, "Update Users", SystemAccess),
@@ -59,23 +59,23 @@ public static class SchoolPermissions
             new SchoolPermission(SchoolAction.Read, SchoolFeature.RoleClaims, "Read Role Claims/Permissions", SystemAccess),
             new SchoolPermission(SchoolAction.Update, SchoolFeature.RoleClaims, "Update Role Claims/Permissions", SystemAccess),
 
-            new SchoolPermission(SchoolAction.Read, SchoolFeature.Schools, "Read Schools", Academics, isBasic: true),
+            new SchoolPermission(SchoolAction.Read, SchoolFeature.Schools, "Read Schools", Academics, IsBasic: true),
             new SchoolPermission(SchoolAction.Create, SchoolFeature.Schools, "Create Schools", Academics),
             new SchoolPermission(SchoolAction.Update, SchoolFeature.Schools, "Update Schools", Academics),
             new SchoolPermission(SchoolAction.Delete, SchoolFeature.Schools, "Delete Schools", Academics),
 
-            new SchoolPermission(SchoolAction.RefreshToken, SchoolFeature.Tokens, "Generate Refresh Token", SystemAccess, isBasic: true)
+            new SchoolPermission(SchoolAction.RefreshToken, SchoolFeature.Tokens, "Generate Refresh Token", SystemAccess, IsBasic: true)
     ];
 
     public static IReadOnlyList<SchoolPermission> All { get; }
         = new ReadOnlyCollection<SchoolPermission>(_allPermissions);
 
     public static IReadOnlyList<SchoolPermission> Root { get; }
-        = new ReadOnlyCollection<SchoolPermission>(_allPermissions.Where(x => x.isRoot).ToArray());
+        = new ReadOnlyCollection<SchoolPermission>(_allPermissions.Where(x => x.IsRoot).ToArray());
 
     public static IReadOnlyList<SchoolPermission> Admin { get; }
-        = new ReadOnlyCollection<SchoolPermission>(_allPermissions.Where(x => !x.isRoot).ToArray());
+        = new ReadOnlyCollection<SchoolPermission>(_allPermissions.Where(x => !x.IsRoot).ToArray());
 
     public static IReadOnlyList<SchoolPermission> Basic { get; }
-        = new ReadOnlyCollection<SchoolPermission>(_allPermissions.Where(x => x.isBasic).ToArray());
+        = new ReadOnlyCollection<SchoolPermission>(_allPermissions.Where(x => x.IsBasic).ToArray());
 }
