@@ -66,7 +66,7 @@ public class TokenService : ITokenService
     private async Task<TokenResponse> GenerateTokenAndUpdateUserAsync(ApplicationUser user)
     {
         // Generate jwt
-        var newJwt = GenerateToken(user);
+        var newJwt = await GenerateToken(user);
 
         // Refresh token
         user.RefreshToken = GenerateRefreshToken();
@@ -82,9 +82,9 @@ public class TokenService : ITokenService
         };
     }
 
-    private string GenerateToken(ApplicationUser user)
+    private async Task<string> GenerateToken(ApplicationUser user)
     {
-        return GenerateEncryptedToken(GenerateSigningCredentials(), GenerateClaims(user));
+        return GenerateEncryptedToken(GenerateSigningCredentials(), await GenerateClaims(user));
     }
 
     private string GenerateEncryptedToken(SigningCredentials signingCredentials, IEnumerable<Claim> claims)
@@ -106,17 +106,39 @@ public class TokenService : ITokenService
         return new SigningCredentials(new SymmetricSecurityKey(secret), SecurityAlgorithms.Sha256);
     }
 
-    private IEnumerable<Claim> GenerateClaims(ApplicationUser user)
+    private async Task<IEnumerable<Claim>> GenerateClaims(ApplicationUser user)
     {
-        return
-            [
-                new(ClaimTypes.NameIdentifier,user.Id),
+        var userClaims = await _userManager.GetClaimsAsync(user);
+        var userRoles = await _userManager.GetRolesAsync(user);
+
+        var roleClaims = new List<Claim>();
+        var permissionClaims = new List<Claim>();
+
+        foreach (var userRole in userRoles)
+        {
+            roleClaims.Add(new Claim(ClaimTypes.Role, userRole));
+
+            var currentRole = await _roleManager.FindByNameAsync(userRole);
+
+            var allPermissionsForCurrentRole = await _roleManager.GetClaimsAsync(currentRole);
+
+            permissionClaims.AddRange(allPermissionsForCurrentRole);
+        }
+
+        var claims = new List<Claim>
+        {
+                new(ClaimTypes.NameIdentifier, user.Id),
                 new(ClaimTypes.Email, user.Email),
-                new(ClaimTypes.Name , user.FirstName),
-                new(ClaimTypes.Surname , user.LastName),
-                new(ClaimConstants.Tenant , _tenantContextAccessor.MultiTenantContext.TenantInfo.Id),
-                new(ClaimTypes.MobilePhone , user.PhoneNumber ??string.Empty),
-            ];
+                new(ClaimTypes.Name, user.FirstName),
+                new(ClaimTypes.Surname, user.LastName),
+                new(ClaimConstants.Tenant, _tenantContextAccessor.MultiTenantContext.TenantInfo.Id),
+                new(ClaimTypes.MobilePhone, user.PhoneNumber ?? string.Empty)
+        }
+        .Union(roleClaims)
+        .Union(userClaims)
+        .Union(permissionClaims);
+
+        return claims;
     }
 
     private string GenerateRefreshToken()
