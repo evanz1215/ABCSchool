@@ -1,4 +1,5 @@
-﻿using Finbuckle.MultiTenant;
+﻿using Applocation;
+using Finbuckle.MultiTenant;
 using Infrastructure.Contexts;
 using Infrastructure.Identity.Auth;
 using Infrastructure.Identity.Models;
@@ -63,6 +64,9 @@ public static class Startup
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
+        //services.AddScoped<ITokenService, TokenService>();
+        //services.AddOptions<JwtSettings>().BindConfiguration("JwtSettings");
+
         return services;
     }
 
@@ -72,6 +76,14 @@ public static class Startup
             .AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>()
             .AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
         return services;
+    }
+
+    public static JwtSettings GetJwtSettings(this IServiceCollection services, IConfiguration config)
+    {
+        var jwtSettingsConfig = config.GetSection(nameof(JwtSettings));
+        services.Configure<JwtSettings>(jwtSettingsConfig);
+
+        return jwtSettingsConfig.Get<JwtSettings>();
     }
 
     public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder app)

@@ -1,10 +1,12 @@
-﻿using Applocation.Exceptions;
+﻿using Applocation;
+using Applocation.Exceptions;
 using Applocation.Features.Identity.Tokens;
 using Finbuckle.MultiTenant.Abstractions;
 using Infrastructure.Constants;
 using Infrastructure.Identity.Models;
 using Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -18,12 +20,14 @@ public class TokenService : ITokenService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly RoleManager<ApplicationRole> _roleManager;
     private readonly IMultiTenantContextAccessor<ABCSchoolTenantInfo> _tenantContextAccessor;
+    private readonly JwtSettings _jwtSettings;
 
-    public TokenService(UserManager<ApplicationUser> userManager, IMultiTenantContextAccessor<ABCSchoolTenantInfo> tenantContextAccessor, RoleManager<ApplicationRole> roleManager)
+    public TokenService(UserManager<ApplicationUser> userManager, IMultiTenantContextAccessor<ABCSchoolTenantInfo> tenantContextAccessor, RoleManager<ApplicationRole> roleManager, IOptions<JwtSettings> jwtSettings)
     {
         _userManager = userManager;
         _tenantContextAccessor = tenantContextAccessor;
         _roleManager = roleManager;
+        _jwtSettings = jwtSettings.Value;
     }
 
     public async Task<TokenResponse> LoginAsync(TokenRequest request)
@@ -60,7 +64,41 @@ public class TokenService : ITokenService
 
     public async Task<TokenResponse> RefreshTokenAsync(RefreshTokenRequest request)
     {
-        throw new NotImplementedException();
+        var userPrincipal = GetClaimsPrincipalFromExpiringToken(request.CurrentJwt);
+        var userEmail = userPrincipal.GetEmail();
+
+        var userInDb = await _userManager.FindByEmailAsync(userEmail) ?? throw new UnauthorizedException(["Authentication failed."]);
+
+        if (userInDb.RefreshToken != request.CurrentRefreshToken || userInDb.RefreshTokenExpiryTime < DateTime.UtcNow)
+        {
+            throw new UnauthorizedException(["Invalid refresh token."]);
+        }
+
+        return await GenerateTokenAndUpdateUserAsync(userInDb);
+    }
+
+    private ClaimsPrincipal GetClaimsPrincipalFromExpiringToken(string expiringToken)
+    {
+        var tokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ClockSkew = TimeSpan.Zero,
+            RoleClaimType = ClaimTypes.Role,
+            ValidateLifetime = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Secret))
+        };
+
+        var tokenHandler = new JwtSecurityTokenHandler();
+        var pricipal = tokenHandler.ValidateToken(expiringToken, tokenValidationParameters, out var securityToken);
+
+        if (securityToken is not JwtSecurityToken jwtSecurityToken || jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
+        {
+            throw new UnauthorizedException(["Invalid token provided. Failed to generate new token."]);
+        }
+
+        return pricipal;
     }
 
     private async Task<TokenResponse> GenerateTokenAndUpdateUserAsync(ApplicationUser user)
@@ -70,7 +108,7 @@ public class TokenService : ITokenService
 
         // Refresh token
         user.RefreshToken = GenerateRefreshToken();
-        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(1);
+        user.RefreshTokenExpiryTime = DateTime.UtcNow.AddDays(_jwtSettings.RefreshTokenExpiryTimeIsDays);
 
         await _userManager.UpdateAsync(user);
 
@@ -91,7 +129,7 @@ public class TokenService : ITokenService
     {
         var token = new JwtSecurityToken(
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(60),
+            expires: DateTime.UtcNow.AddMinutes(_jwtSettings.TokenExpiryTimeMinutes),
             signingCredentials: signingCredentials
             );
 
@@ -102,7 +140,7 @@ public class TokenService : ITokenService
 
     private SigningCredentials GenerateSigningCredentials()
     {
-        byte[] secret = Encoding.UTF8.GetBytes("SECRET");
+        byte[] secret = Encoding.UTF8.GetBytes(_jwtSettings.Secret);
         return new SigningCredentials(new SymmetricSecurityKey(secret), SecurityAlgorithms.Sha256);
     }
 
