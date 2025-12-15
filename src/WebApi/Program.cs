@@ -17,7 +17,7 @@ public class Program
 
         builder.Services.AddInfrastructureServices(builder.Configuration);
 
-        builder.Services.GetJwtSettings(builder.Configuration);
+        builder.Services.AddJwtAuthentication(builder.Services.GetJwtSettings(builder.Configuration));
 
         var app = builder.Build();
 

@@ -1,15 +1,25 @@
 ﻿using Applocation;
+using Applocation.Wrappers;
 using Finbuckle.MultiTenant;
+using Infrastructure.Constants;
 using Infrastructure.Contexts;
 using Infrastructure.Identity.Auth;
 using Infrastructure.Identity.Models;
 using Infrastructure.Tenancy;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
+using System.Net;
+using System.Reflection;
+using System.Security.Claims;
+using System.Text;
 
 namespace Infrastructure;
 
@@ -84,6 +94,93 @@ public static class Startup
         services.Configure<JwtSettings>(jwtSettingsConfig);
 
         return jwtSettingsConfig.Get<JwtSettings>();
+    }
+
+    public static IServiceCollection AddJwtAuthentication(this IServiceCollection services, JwtSettings jwtSettings)
+    {
+        var secret = Encoding.ASCII.GetBytes(jwtSettings.Secret);
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.RequireHttpsMetadata = false;
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = false,
+                ValidateAudience = false,
+                ClockSkew = TimeSpan.Zero,
+                RoleClaimType = ClaimTypes.Role,
+                ValidateLifetime = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Secret))
+            };
+            options.Events = new JwtBearerEvents
+            {
+                OnAuthenticationFailed = context =>
+                {
+                    if (context.Exception is SecurityTokenExpiredException)
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        context.Response.ContentType = "application/json";
+
+                        var result = JsonConvert.SerializeObject(ResponseWrapper.Fail("Token has expired."));
+                        return context.Response.WriteAsync(result);
+                    }
+                    else
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.InsufficientStorage;
+                        context.Response.ContentType = "application/json";
+
+                        var result = JsonConvert.SerializeObject(ResponseWrapper.Fail("An unhandled error has occured."));
+                        return context.Response.WriteAsync(result);
+                    }
+                },
+                OnChallenge = context =>
+                {
+                    context.HandleResponse();
+                    if (!context.Response.HasStarted)
+                    {
+                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                        context.Response.ContentType = "application/json";
+
+                        var result = JsonConvert.SerializeObject(ResponseWrapper.Fail("You are not authorized."));
+                        return context.Response.WriteAsync(result);
+                    }
+
+                    return Task.CompletedTask;
+                },
+                OnForbidden = context =>
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Forbidden;
+                    context.Response.ContentType = "application/json";
+
+                    var result = JsonConvert.SerializeObject(ResponseWrapper.Fail("You are not authorized to access this resource."));
+                    return context.Response.WriteAsync(result);
+                }
+            };
+        });
+
+        services.AddAuthorization(options =>
+        {
+            foreach (var prop in typeof(SchoolPermissions).GetNestedTypes()
+                .SelectMany(x => x.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)))
+            {
+                var propertyValue = prop.GetValue(null);
+                if (propertyValue is not null)
+                {
+                    options.AddPolicy(
+                        propertyValue.ToString(),
+                        policy => policy.RequireClaim(ClaimConstants.Permission, propertyValue.ToString())
+                        );
+                }
+            }
+        });
+
+        return services;
     }
 
     public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder app)
