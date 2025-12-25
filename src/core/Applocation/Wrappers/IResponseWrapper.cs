@@ -2,7 +2,7 @@
 
 public interface IResponseWrapper
 {
-    List<string> Message { get; set; }
+    List<string> Messages { get; set; }
     bool IsSuccessful { get; set; }
 }
 
