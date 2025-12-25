@@ -232,7 +232,23 @@ public static class Startup
 
     public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder app)
     {
+        app.UseAuthentication();
         app.UseMultiTenant();
+        app.UseAuthorization();
+        app.UseOpenApiDocumentation();
+
+        return app;
+    }
+
+    internal static IApplicationBuilder UseOpenApiDocumentation(this IApplicationBuilder app)
+    {
+        app.UseOpenApi();
+        app.UseSwaggerUi(options =>
+        {
+            options.DefaultModelExpandDepth = -1;
+            options.DocExpansion = "none";
+            options.TagsSorter = "alpha";
+        });
 
         return app;
     }
