@@ -131,19 +131,27 @@ public static class Startup
                 {
                     if (context.Exception is SecurityTokenExpiredException)
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
-                        context.Response.ContentType = "application/json";
+                        if (!context.Response.HasStarted)
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                            context.Response.ContentType = "application/json";
 
-                        var result = JsonConvert.SerializeObject(ResponseWrapper.Fail("Token has expired."));
-                        return context.Response.WriteAsync(result);
+                            var result = JsonConvert.SerializeObject(ResponseWrapper.Fail("Token has expired."));
+                            return context.Response.WriteAsync(result);
+                        }
+                        return Task.CompletedTask;
                     }
                     else
                     {
-                        context.Response.StatusCode = (int)HttpStatusCode.InsufficientStorage;
-                        context.Response.ContentType = "application/json";
+                        if (!context.Response.HasStarted)
+                        {
+                            context.Response.StatusCode = (int)HttpStatusCode.InsufficientStorage;
+                            context.Response.ContentType = "application/json";
 
-                        var result = JsonConvert.SerializeObject(ResponseWrapper.Fail("An unhandled error has occured."));
-                        return context.Response.WriteAsync(result);
+                            var result = JsonConvert.SerializeObject(ResponseWrapper.Fail("An unhandled error has occured."));
+                            return context.Response.WriteAsync(result);
+                        }
+                        return Task.CompletedTask;
                     }
                 },
                 OnChallenge = context =>
