@@ -1,5 +1,6 @@
 using Applocation;
 using Infrastructure;
+using WebApi.Middlewares;
 
 namespace WebApi;
 
@@ -39,6 +40,8 @@ public class Program
         //app.UseAuthorization();
 
         app.UseInfrastructure();
+
+        app.UseMiddleware<ErrorHandlingMiddleware>();
 
         app.MapControllers();
 
