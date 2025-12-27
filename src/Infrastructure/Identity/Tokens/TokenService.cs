@@ -40,7 +40,7 @@ public class TokenService : ITokenService
 
         var userInDb = await _userManager.FindByNameAsync(request.Username) ?? throw new UnauthorizedException(["Authentication not successful."]);
 
-        if (await _userManager.CheckPasswordAsync(userInDb, request.Password))
+        if (!await _userManager.CheckPasswordAsync(userInDb, request.Password))
         {
             throw new UnauthorizedException(["Incorrect Username or Password."]);
         }
@@ -141,7 +141,7 @@ public class TokenService : ITokenService
     private SigningCredentials GenerateSigningCredentials()
     {
         byte[] secret = Encoding.UTF8.GetBytes(_jwtSettings.Secret);
-        return new SigningCredentials(new SymmetricSecurityKey(secret), SecurityAlgorithms.Sha256);
+        return new SigningCredentials(new SymmetricSecurityKey(secret), SecurityAlgorithms.HmacSha256);
     }
 
     private async Task<IEnumerable<Claim>> GenerateClaims(ApplicationUser user)

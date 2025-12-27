@@ -1,10 +1,12 @@
 ﻿using Applocation;
+using Applocation.Features.Identity.Tokens;
 using Applocation.Wrappers;
 using Finbuckle.MultiTenant;
 using Infrastructure.Constants;
 using Infrastructure.Contexts;
 using Infrastructure.Identity.Auth;
 using Infrastructure.Identity.Models;
+using Infrastructure.Identity.Tokens;
 using Infrastructure.OpenApi;
 using Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -79,7 +81,7 @@ public static class Startup
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
 
-        //services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<ITokenService, TokenService>();
         //services.AddOptions<JwtSettings>().BindConfiguration("JwtSettings");
 
         return services;
