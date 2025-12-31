@@ -1,0 +1,12 @@
+﻿namespace Applocation.Features.Tenancy;
+
+public class CreateTenantRequest
+{
+    public string Identifier { get; set; }
+    public string Name { get; set; }
+    public string Email { get; set; }
+    public string FirstName { get; set; }
+    public string LastName { get; set; }
+    public DateTime ValidUpTo { get; set; }
+    public bool IsActive { get; set; }
+}
