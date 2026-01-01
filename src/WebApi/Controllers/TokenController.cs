@@ -29,7 +29,7 @@ public class TokenController : BaseApiController
 
     [HttpPost("refresh-token")]
     [OpenApiOperation("Used to obtain jwt for refresh token.")]
-    [ShouldHavePermission(action: SchoolAction.RefreshToken, feature: SchoolFeature.Tokens)]
+    [ShouldHavePermission(SchoolAction.RefreshToken, SchoolFeature.Tokens)]
     public async Task<IActionResult> GetRefreshTokenAasync([FromBody] RefreshTokenRequest refreshTokenRequest)
     {
         var response = await Sender.Send(new GetRefreshTokenQuery { RefreshToken = refreshTokenRequest });

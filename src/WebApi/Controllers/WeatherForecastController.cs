@@ -1,5 +1,3 @@
-using Infrastructure.Constants;
-using Infrastructure.Identity.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
@@ -21,7 +19,6 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet(Name = "GetWeatherForecast")]
-    [ShouldHavePermission(action: SchoolAction.Read, feature: SchoolFeature.Schools)]
     public IEnumerable<WeatherForecast> Get()
     {
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast

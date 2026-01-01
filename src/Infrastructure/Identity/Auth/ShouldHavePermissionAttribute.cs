@@ -5,7 +5,7 @@ namespace Infrastructure.Identity.Auth;
 
 public class ShouldHavePermissionAttribute : AuthorizeAttribute
 {
-    public ShouldHavePermissionAttribute(string feature, string action)
+    public ShouldHavePermissionAttribute(string action, string feature)
     {
         Policy = SchoolPermission.NameFor(action, feature);
     }
