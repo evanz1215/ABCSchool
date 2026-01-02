@@ -28,7 +28,7 @@ public class TenantsController : BaseApiController
 
     [HttpPost("{tenantId}/activate")]
     [ShouldHavePermission(SchoolAction.Create, SchoolFeature.Tenants)]
-    public async Task<IActionResult> ActiveTenantAsync([FromQuery] string tenantId)
+    public async Task<IActionResult> ActiveTenantAsync([FromRoute] string tenantId)
     {
         var response = await Sender.Send(new ActiveTenantCommand
         {
@@ -44,7 +44,7 @@ public class TenantsController : BaseApiController
 
     [HttpPost("{tenantId}/deactivate")]
     [ShouldHavePermission(SchoolAction.Create, SchoolFeature.Tenants)]
-    public async Task<IActionResult> DeactiveTenantAsync([FromQuery] string tenantId)
+    public async Task<IActionResult> DeactiveTenantAsync([FromRoute] string tenantId)
     {
         var response = await Sender.Send(new DeactiveTenantCommand
         {
@@ -74,9 +74,9 @@ public class TenantsController : BaseApiController
         return BadRequest(response);
     }
 
-    [HttpGet("{tenantId")]
+    [HttpGet("{tenantId}")]
     [ShouldHavePermission(SchoolAction.Read, SchoolFeature.Tenants)]
-    public async Task<IActionResult> GetTenantByIdAsync([FromQuery] string tenantId)
+    public async Task<IActionResult> GetTenantByIdAsync([FromRoute] string tenantId)
     {
         var response = await Sender.Send(new GetTenantByIdQuery
         {

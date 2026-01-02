@@ -1,5 +1,6 @@
 ﻿using Applocation;
 using Applocation.Features.Identity.Tokens;
+using Applocation.Features.Tenancy;
 using Applocation.Wrappers;
 using Finbuckle.MultiTenant;
 using Infrastructure.Constants;
@@ -53,6 +54,8 @@ public static class Startup
             .AddPermissions();
 
         services.AddOpenApiDocumentation(configuration);
+
+        services.AddTransient<ITenantService, TenantService>();
 
         return services;
     }

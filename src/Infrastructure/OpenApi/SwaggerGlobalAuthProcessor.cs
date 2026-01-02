@@ -18,7 +18,8 @@ public class SwaggerGlobalAuthProcessor(string scheme) : IOperationProcessor
 
     public bool Process(OperationProcessorContext context)
     {
-        IList<object> list = ((AspNetCoreOperationProcessorContext)context).ApiDescription.ActionDescriptor.TryGetPropertyValue<IList<object>>("EndpointMetadata");
+        IList<object> list = ((AspNetCoreOperationProcessorContext)context)
+            .ApiDescription.ActionDescriptor.TryGetPropertyValue<IList<object>>("EndpointMetadata");
 
         if (list is not null)
         {
@@ -27,9 +28,15 @@ public class SwaggerGlobalAuthProcessor(string scheme) : IOperationProcessor
                 return true;
             }
 
-            if (context.OperationDescription.Operation.Security.Count == 0)
+            var operation = context.OperationDescription?.Operation;
+            if (operation == null)
             {
-                (context.OperationDescription.Operation.Security ??= new List<OpenApiSecurityRequirement>())
+                return true;
+            }
+
+            if ((operation.Security?.Count ?? 0) == 0)
+            {
+                (operation.Security ??= new List<OpenApiSecurityRequirement>())
                     .Add(new OpenApiSecurityRequirement
                     {
                         {
