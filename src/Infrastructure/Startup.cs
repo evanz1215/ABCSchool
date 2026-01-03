@@ -1,5 +1,6 @@
 ﻿using Applocation;
 using Applocation.Features.Identity.Tokens;
+using Applocation.Features.Schools;
 using Applocation.Features.Tenancy;
 using Applocation.Wrappers;
 using Finbuckle.MultiTenant;
@@ -9,6 +10,7 @@ using Infrastructure.Identity.Auth;
 using Infrastructure.Identity.Models;
 using Infrastructure.Identity.Tokens;
 using Infrastructure.OpenApi;
+using Infrastructure.Schools;
 using Infrastructure.Tenancy;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -56,6 +58,7 @@ public static class Startup
         services.AddOpenApiDocumentation(configuration);
 
         services.AddTransient<ITenantService, TenantService>();
+        services.AddTransient<ISchoolService, SchoolService>();
 
         return services;
     }
