@@ -1,4 +1,6 @@
-﻿using FluentValidation;
+﻿using Applocation.Pipelines;
+using FluentValidation;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -11,6 +13,9 @@ public static class Startup
         var assembly = Assembly.GetExecutingAssembly();
 
         services.AddValidatorsFromAssembly(assembly);
+
+        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBenaviour<,>));
+
         services.AddMediatR(config =>
         {
             config.RegisterServicesFromAssembly(assembly);
