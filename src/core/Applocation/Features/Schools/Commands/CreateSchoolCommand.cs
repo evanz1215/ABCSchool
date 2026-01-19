@@ -1,11 +1,12 @@
-﻿using Applocation.Wrappers;
+﻿using Applocation.Pipelines;
+using Applocation.Wrappers;
 using Domain.Entities;
 using Mapster;
 using MediatR;
 
 namespace Applocation.Features.Schools.Commands;
 
-public class CreateSchoolCommand : IRequest<IResponseWrapper>
+public class CreateSchoolCommand : IRequest<IResponseWrapper>, IValidateMe
 {
     public CreateSchoolRequest CreateSchool { get; set; }
 }

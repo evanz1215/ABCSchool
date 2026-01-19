@@ -97,7 +97,7 @@ public class SchoolsController : BaseApiController
 
     [HttpGet("all")]
     [ShouldHavePermission(SchoolAction.Read, SchoolFeature.Schools)]
-    public async Task<IActionResult> GetAllSchoolsAsync([FromRoute] string name)
+    public async Task<IActionResult> GetAllSchoolsAsync()
     {
         var response = await Sender.Send(new GetSchoolsQuery());
 

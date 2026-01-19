@@ -1,9 +1,10 @@
-﻿using Applocation.Wrappers;
+﻿using Applocation.Pipelines;
+using Applocation.Wrappers;
 using MediatR;
 
 namespace Applocation.Features.Schools.Commands;
 
-public class UpdateSchoolCommand : IRequest<IResponseWrapper>
+public class UpdateSchoolCommand : IRequest<IResponseWrapper>, IValidateMe
 {
     public UpdateSchoolRequest UpdateSchool { get; set; }
 }

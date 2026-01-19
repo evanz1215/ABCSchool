@@ -5,7 +5,7 @@ using MediatR;
 namespace Applocation.Pipelines;
 
 public class ValidationPipelineBenaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-   where TRequest : IRequest<TResponse>
+   where TRequest : IRequest<TResponse>, IValidateMe
 {
     private readonly IEnumerable<IValidator<TRequest>> _validators;
 
