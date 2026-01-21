@@ -94,7 +94,8 @@ public class ApplicationDbSeeder
                     RoleId = role.Id,
                     ClaimType = ClaimConstants.Permission,
                     ClaimValue = rolePermission.Name,
-                    Group = rolePermission.Group
+                    Group = rolePermission.Group,
+                    Description = rolePermission.Description
                 }, cancellationToken);
 
                 await _applicationDbContext.SaveChangesAsync(cancellationToken);
