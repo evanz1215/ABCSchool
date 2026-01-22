@@ -1,4 +1,5 @@
 ﻿using Applocation;
+using Applocation.Features.Identity.Roles;
 using Applocation.Features.Identity.Tokens;
 using Applocation.Features.Schools;
 using Applocation.Features.Tenancy;
@@ -8,6 +9,7 @@ using Infrastructure.Constants;
 using Infrastructure.Contexts;
 using Infrastructure.Identity.Auth;
 using Infrastructure.Identity.Models;
+using Infrastructure.Identity.Roles;
 using Infrastructure.Identity.Tokens;
 using Infrastructure.OpenApi;
 using Infrastructure.Schools;
@@ -59,6 +61,7 @@ public static class Startup
 
         services.AddTransient<ITenantService, TenantService>();
         services.AddTransient<ISchoolService, SchoolService>();
+        services.AddTransient<IRoleService, RoleService>();
 
         return services;
     }
