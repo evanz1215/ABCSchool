@@ -38,7 +38,7 @@ public class RoleService : IRoleService
 
         if (!result.Succeeded)
         {
-            var errors = GetIdentityResultErrorDescriptions(result);
+            var errors = IdentityHelper.GetIdentityResultErrorDescriptions(result);
             throw new IdentityException(errors);
         }
 
@@ -63,7 +63,7 @@ public class RoleService : IRoleService
 
         if (!result.Succeeded)
         {
-            var errors = GetIdentityResultErrorDescriptions(result);
+            var errors = IdentityHelper.GetIdentityResultErrorDescriptions(result);
             throw new IdentityException(errors);
         }
 
@@ -120,7 +120,7 @@ public class RoleService : IRoleService
 
         if (!result.Succeeded)
         {
-            var errors = GetIdentityResultErrorDescriptions(result);
+            var errors = IdentityHelper.GetIdentityResultErrorDescriptions(result);
             throw new IdentityException(errors);
         }
 
@@ -172,7 +172,7 @@ public class RoleService : IRoleService
             if (!result.Succeeded)
             {
                 // 將 IdentityResult 的錯誤描述整理後拋出，供上層處理或回傳給前端
-                var errors = GetIdentityResultErrorDescriptions(result);
+                var errors = IdentityHelper.GetIdentityResultErrorDescriptions(result);
                 throw new IdentityException(errors);
             }
         }
@@ -196,17 +196,5 @@ public class RoleService : IRoleService
         await _dbContext.SaveChangesAsync();
 
         return "Permissions Updated Successfully.";
-    }
-
-    private List<string> GetIdentityResultErrorDescriptions(IdentityResult identityResult)
-    {
-        var errorDescriptions = new List<string>();
-
-        foreach (var error in identityResult.Errors)
-        {
-            errorDescriptions.Add(error.Description);
-        }
-
-        return errorDescriptions;
     }
 }
