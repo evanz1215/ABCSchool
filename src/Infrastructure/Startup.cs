@@ -1,6 +1,7 @@
 ﻿using Applocation;
 using Applocation.Features.Identity.Roles;
 using Applocation.Features.Identity.Tokens;
+using Applocation.Features.Identity.Users;
 using Applocation.Features.Schools;
 using Applocation.Features.Tenancy;
 using Applocation.Wrappers;
@@ -11,6 +12,7 @@ using Infrastructure.Identity.Auth;
 using Infrastructure.Identity.Models;
 using Infrastructure.Identity.Roles;
 using Infrastructure.Identity.Tokens;
+using Infrastructure.Identity.Users;
 using Infrastructure.OpenApi;
 using Infrastructure.Schools;
 using Infrastructure.Tenancy;
@@ -61,7 +63,6 @@ public static class Startup
 
         services.AddTransient<ITenantService, TenantService>();
         services.AddTransient<ISchoolService, SchoolService>();
-        services.AddTransient<IRoleService, RoleService>();
 
         return services;
     }
@@ -91,6 +92,9 @@ public static class Startup
             .AddDefaultTokenProviders();
 
         services.AddScoped<ITokenService, TokenService>();
+        services.AddScoped<IRoleService, RoleService>();
+        services.AddScoped<IUserService, UserService>();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
         //services.AddOptions<JwtSettings>().BindConfiguration("JwtSettings");
 
         return services;

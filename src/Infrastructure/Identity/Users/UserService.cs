@@ -5,7 +5,9 @@ using Infrastructure.Constants;
 using Infrastructure.Contexts;
 using Infrastructure.Identity.Models;
 using Infrastructure.Tenancy;
+using Mapster;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Identity.Users;
 
@@ -129,47 +131,160 @@ public class UserService : IUserService
 
     public async Task<string> CreateAsync(CreateUserRequest request)
     {
-        throw new NotImplementedException();
+        if (request.Password != request.ConfirmPassword)
+        {
+            throw new ConflictException(["Passwords do not match."]);
+        }
+
+        if (await IsEmailTakenAsync(request.Email))
+        {
+            throw new ConflictException(["Email is already taken."]);
+        }
+
+        var newUser = new ApplicationUser
+        {
+            FirstName = request.FirstName,
+            LastName = request.LastName,
+            Email = request.Email,
+            PhoneNumber = request.PhoneNumber,
+            IsActive = request.IsActive,
+            UserName = request.Email,
+            EmailConfirmed = true,
+        };
+
+        var result = await _userManager.CreateAsync(newUser, request.Password);
+
+        if (!result.Succeeded)
+        {
+            var errors = IdentityHelper.GetIdentityResultErrorDescriptions(result);
+            throw new IdentityException(errors);
+        }
+
+        return newUser.Id;
     }
 
     public async Task<string> DeleteUserAsync(string userId)
     {
-        throw new NotImplementedException();
+        var userInDb = await GetUserAsync(userId);
+
+        if (userInDb.Email == TenancyConstants.Root.Email)
+        {
+            throw new ConflictException(["Not allowed to remove Admin User for a Root Tenant User."]);
+        }
+
+        _dbContext.Users.Remove(userInDb);
+
+        await _dbContext.SaveChangesAsync();
+
+        return userInDb.Id;
     }
 
     public async Task<List<UserResponse>> GetAllAsync(CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var usersInDb = await _userManager.Users.ToListAsync(cancellationToken);
+
+        return usersInDb.Adapt<List<UserResponse>>();
     }
 
     public async Task<UserResponse> GetUserByIdAsync(string userId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var userInDb = await GetUserAsync(userId);
+
+        return userInDb.Adapt<UserResponse>();
     }
 
     public async Task<List<string>> GetUserPermissionsAsync(string userId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var userInDb = await GetUserAsync(userId);
+
+        var userRolesNames = await _userManager.GetRolesAsync(userInDb);
+
+        if (userRolesNames == null || !userRolesNames.Any())
+        {
+            return new List<string>();
+        }
+
+        var permissions = new List<string>();
+
+        foreach (var role in await _roleManager.Roles.Where(x => userRolesNames.Contains(x.Name)).ToListAsync(cancellationToken))
+        {
+            permissions.AddRange(await _dbContext.RoleClaims.Where(x => x.RoleId == role.Id && x.ClaimType == ClaimConstants.Permission).Select(x => x.ClaimValue).ToListAsync(cancellationToken));
+        }
+
+        return permissions.Distinct().ToList();
+
+        // INFO: 效能優化參考
+        // 保留存在檢查（會拋 NotFoundException）
+        //var userInDb = await GetUserAsync(userId);
+
+        //var permissions = await _dbContext.UserRoles
+        //    .Where(ur => ur.UserId == userId)
+        //    .Join(_dbContext.RoleClaims,
+        //        userRole => userRole.RoleId,
+        //        roleClaim => roleClaim.RoleId,
+        //        (userRole, roleClaim) => roleClaim)
+        //    .Where(rc => rc.ClaimType == ClaimConstants.Permission)
+        //    .Select(rc => rc.ClaimValue)
+        //    .Distinct()
+        //    .ToListAsync(cancellationToken);
+
+        //return permissions;
     }
 
     public async Task<List<UserRoleResponse>> GetUserRolesAsync(string userId, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var userInDb = await GetUserAsync(userId);
+
+        var userRoles = new List<UserRoleResponse>();
+
+        var rolesInDb = await _roleManager.Roles.ToListAsync(cancellationToken);
+
+        foreach (var role in rolesInDb)
+        {
+            userRoles.Add(new UserRoleResponse
+            {
+                RoleId = role.Id,
+                Name = role.Name,
+                Description = role.Description,
+                IsAssigned = await _userManager.IsInRoleAsync(userInDb, role.Name)
+            });
+        }
+
+        return userRoles;
     }
 
     public async Task<bool> IsEmailTakenAsync(string email)
     {
-        throw new NotImplementedException();
+        var result = await _userManager.FindByEmailAsync(email);
+
+        return result is not null;
     }
 
     public async Task<bool> IsPermissionAssigedAsync(string userId, string permission, CancellationToken cancellationToken = default)
     {
-        throw new NotImplementedException();
+        var userPermissions = await GetUserPermissionsAsync(userId, cancellationToken);
+        var result = userPermissions.Contains(permission);
+
+        return result;
     }
 
     public async Task<string> UpdateAsync(UpdateUserRequest request)
     {
-        throw new NotImplementedException();
+        var userInDb = await GetUserAsync(request.Id);
+
+        userInDb.FirstName = request.FirstName;
+        userInDb.LastName = request.LastName;
+        userInDb.PhoneNumber = request.PhoneNumber;
+
+        var result = await _userManager.UpdateAsync(userInDb);
+
+        if (!result.Succeeded)
+        {
+            var errors = IdentityHelper.GetIdentityResultErrorDescriptions(result);
+            throw new IdentityException(errors);
+        }
+
+        return userInDb.Id;
     }
 
     private async Task<ApplicationUser> GetUserAsync(string userId)
