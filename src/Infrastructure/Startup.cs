@@ -95,6 +95,7 @@ public static class Startup
         services.AddScoped<IRoleService, RoleService>();
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<CurrentUserMiddleware>();
         //services.AddOptions<JwtSettings>().BindConfiguration("JwtSettings");
 
         return services;
@@ -256,6 +257,7 @@ public static class Startup
     public static IApplicationBuilder UseInfrastructure(this IApplicationBuilder app)
     {
         app.UseAuthentication();
+        app.UseMiddleware<CurrentUserMiddleware>();
         app.UseMultiTenant();
         app.UseAuthorization();
         app.UseOpenApiDocumentation();
