@@ -3,6 +3,7 @@ using Applocation.Features.Identity.Users.Commands;
 using Applocation.Features.Identity.Users.Queries;
 using Infrastructure.Constants;
 using Infrastructure.Identity.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
@@ -61,7 +62,7 @@ public class UsersController : BaseApiController
         return NotFound(response);
     }
 
-    [HttpPut("update-roles/{roleId")]
+    [HttpPut("update-roles/{roleId}")]
     [ShouldHavePermission(SchoolAction.Update, SchoolFeature.UserRoles)]
     public async Task<IActionResult> UpdateUserRolesAsync([FromBody] UserRolesRequest userRolesRequest, [FromRoute] string roleId)
     {
@@ -109,7 +110,7 @@ public class UsersController : BaseApiController
         return NotFound(response);
     }
 
-    [HttpGet("{userId")]
+    [HttpGet("{userId}")]
     [ShouldHavePermission(SchoolAction.Read, SchoolFeature.Users)]
     public async Task<IActionResult> GetUserByIdAsync([FromRoute] string userId)
     {
@@ -150,6 +151,23 @@ public class UsersController : BaseApiController
         var response = await Sender.Send(new GetUserRolesQuery
         {
             UserId = userId
+        });
+
+        if (response.IsSuccessful)
+        {
+            return Ok(response);
+        }
+
+        return NotFound(response);
+    }
+
+    [HttpPut("change-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ChangeUserPasswordAsync([FromBody] ChangePasswordRequest changePassword)
+    {
+        var response = await Sender.Send(new ChangeUserPasswordCommand
+        {
+            ChangePassword = changePassword
         });
 
         if (response.IsSuccessful)
